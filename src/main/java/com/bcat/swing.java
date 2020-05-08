@@ -1,5 +1,9 @@
 package com.bcat;
 
+import com.bcat.Handler.RmsHandler;
+import com.bcat.Handler.ZabbixHandler;
+import com.bcat.Service.RmsService;
+import com.bcat.Service.ZabbixService;
 import com.bcat.model.Mail;
 import com.bcat.utils.*;
 
@@ -8,6 +12,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -95,42 +100,64 @@ public class swing {
             final int delay = 30000;
             AtomicInteger count = new AtomicInteger();
             AtomicInteger bufferHour = new AtomicInteger();
+            ZabbixHandler zabbixHandler = new ZabbixHandler();
+            RmsHandler rmsHandler = new RmsHandler();
             // 监控定时器
             final Timer timer = new Timer(delay, (e) -> {
-                // 首次测试登录
+
                 String cookie = cookieText.getText();
-                String result = RmsUtil.login(cookie);
                 String emailReceiver = emailText.getText();
-                if (result == null){
-                    logUtil.error("  网络异常或Cookie失效");
+                // 获取数据
+                List<List<String>> rmsDataArrays = rmsHandler.getData(cookie);
+                List<Map<String,String>> zabbixDataArrays = zabbixHandler.getData();
+
+                if (rmsDataArrays == null){
+                    logUtil.error("  rms网络异常或Cookie失效");
                     return;
                 }
+                if (zabbixDataArrays == null){
+                    logUtil.error("  zabbix网络异常或Cookie失效");
+                    return;
+                }
+
                 // 当前监控时间段报时
                 if (bufferHour.get() != Calendar.getInstance().get(Calendar.HOUR_OF_DAY)){
                     bufferHour.set(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
                     logUtil.info("  -------------  "+ bufferHour.get() + "点  -------------");
                 }
-                // 开始获取需要发送的数据
-                List<List<String>> dataArrays = MyStringUtil.parseStr(result);
-                List<List<String>> sendDataArrays = JudgeUtil.checkSend(dataArrays);
+                // 获取需要发送的数据
+                List<List<String>> rmsSendDataArrays = RmsService.checkSend(rmsDataArrays);
+                List<Map<String,String>> zabbixSendDataArrays = ZabbixService.checkSend(zabbixDataArrays);
+
                 /*if (sendDataArrays.size() != 0){
                     logUtil.info("  共获取 " + dataArrays.size() + " 条数据, " +
                             "需发送 " + sendDataArrays.size() + " 条数据");
                 }*/
 
-                // 开始发送告警邮件
-                List<Mail> mailList = new ArrayList<>();
-                for (List<String> sdArray : sendDataArrays){
-                    String id = sdArray.get(0);
-                    String dataTime = sdArray.get(5);
-                    String level = sdArray.get(4);
-                    sdArray.set(12, RmsUtil.getAlarmUrlById(id, cookie));
-                    String title = "[" + TimeUtil.getHourByDate(dataTime) + "点][rms][" + sdArray.get(4) + "]" + sdArray.get(1);
-                    String content = sdArray.toString();
-                    mailList.add(new Mail(emailReceiver, title, content));
+                // 开始发送rms告警邮件
+                List<Mail> rmsMailList = new ArrayList<>();
+                for (List<String> rsdArray : rmsSendDataArrays){
+                    String id = rsdArray.get(0);
+                    String dataTime = rsdArray.get(5);
+                    String level = rsdArray.get(4);
+                    rsdArray.set(12, rmsHandler.getAlarmUrlById(id, cookie));
+                    String title = "[" + TimeUtil.getHourByDate(dataTime) + "点][rms][" + rsdArray.get(4) + "]" + rsdArray.get(1);
+                    String content = rsdArray.toString();
+                    rmsMailList.add(new Mail(emailReceiver, title, content));
                     logUtil.info("  发送一条 [ " + level + " ] 告警至邮箱 ");
                 }
-                List<Boolean> booleanList = EmailUtil.sendEmails(mailList);
+                List<Boolean> rmsBooleanList = EmailUtil.sendEmails(rmsMailList);
+
+                //  开始发送zabbix告警邮件
+                List<Mail> zabbixMailList = new ArrayList<>();
+                for (Map<String,String> zsdArray : zabbixSendDataArrays){
+                    String time = zsdArray.get("time");
+                    String title = "[" + time + "]zabbix有一条红色告警超10分钟未消除";
+                    String content = zsdArray.toString();
+                    zabbixMailList.add(new Mail(emailReceiver, title, content));
+                    logUtil.info("  发送一条 [ zbbix ] 告警至邮箱 ");
+                }
+                List<Boolean> zabbixBooleanList = EmailUtil.sendEmails(zabbixMailList);
 
                 // 调用状态label更新
                 statusLabel.setText("状态：第 " + count.incrementAndGet() + " 次调用,时间："+ TimeUtil.getDayTime());
@@ -142,12 +169,18 @@ public class swing {
                 if (runButton.getText().equals("开始")){
                     // 开始首先检测Cookie
                     String cookie = cookieText.getText();
-                    String result = RmsUtil.login(cookie);
-                    if (result == null){
-                        logUtil.error("  网络异常或Cookie失效");
+                    List<List<String>> rmsDataArrays = rmsHandler.getData(cookie);
+                    List<Map<String,String>> zabbixDataArrays = zabbixHandler.getData();
+
+                    if (rmsDataArrays == null){
+                        logUtil.error("  rms网络异常或Cookie失效");
                         return;
                     }
-                    logUtil.info("  模拟登录成功,正在启动监控");
+                    if (zabbixDataArrays == null){
+                        logUtil.error("  zabbix网络异常或Cookie失效");
+                        return;
+                    }
+                    logUtil.info("  测试获取数据成功,正在启动监控");
 
                     timer.start();
                     logUtil.info("  监控运行中, 当前每 " + delay/1000 + "s 监控一次");

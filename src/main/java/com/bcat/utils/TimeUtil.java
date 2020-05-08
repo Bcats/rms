@@ -13,6 +13,7 @@ public class TimeUtil {
         return timeFormat.format(new Date());
     }
 
+    // 字符串时间转Date类型
     public static Date toDate(String date, String pattern) {
 
         DateFormat dateFormat = new SimpleDateFormat(pattern);
@@ -25,9 +26,9 @@ public class TimeUtil {
         return null;
     }
 
-    public static boolean isInOneHour(Date alarmDate){
+    public static boolean isInOneHour(Date data){
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(alarmDate);
+        calendar.setTime(data);
         if(calendar.get(Calendar.HOUR_OF_DAY) ==
                 Calendar.getInstance().get(Calendar.HOUR_OF_DAY)){
             return true;
@@ -43,6 +44,15 @@ public class TimeUtil {
                 (60 * 60 * 1000) % 24;
 
         return compareValue < 1L;*/
+    }
+
+    public static boolean isOverTenMinutes(Date data){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(data);
+        if (Calendar.getInstance().get(Calendar.MINUTE) - calendar.get(Calendar.MINUTE) > 10){
+            return true;
+        }
+        return false;
     }
 
     public static String getHourByDate(String dateTime){

@@ -10,30 +10,6 @@ import java.util.List;
 
 public class MyStringUtil {
 
-    public static List<List<String>> parseStr(String str){
-        Document document = Jsoup.parse(str);
-        Elements mytbElements = document.getElementsByClass("myTableBox");
-        Element mytbElement = mytbElements.get(0);
-
-        Elements tbElements = mytbElement.getElementsByTag("tbody");
-        Element tbElement = tbElements.get(0);
-
-        Elements trElements = tbElement.getElementsByTag("tr");
-        List<List<String>> dataArrays = new ArrayList<List<String>>();
-        for (Element trElement : trElements){
-            Elements tdElements = trElement.getElementsByTag("td");
-            List<String> dataArray = new ArrayList<String>();
-            for (Element tdElement : tdElements){
-                dataArray.add(tdElement.text());
-            }
-            dataArrays.add(dataArray);
-        }
-
-//        Map<String,String> map = new HashMap<String, String>();
-
-        return dataArrays;
-    }
-
     public static String getSubString(String text, String left, String right) {
         String result = "";
         int zLen;
@@ -53,6 +29,31 @@ public class MyStringUtil {
         }
         result = text.substring(zLen, yLen);
         return result;
+    }
+
+    public static List<String> getSubStrings(String text, String left, String right) {
+        int xLen = 0, yLen = 0;
+        List<String> strings = new ArrayList<>();
+        boolean flag = true;
+        while(flag){
+            xLen = text.indexOf(left, yLen);
+            if (xLen > -1) {
+                xLen += left.length();
+            } else {
+                flag = false;
+                continue;
+            }
+
+            yLen = text.indexOf(right, xLen);
+            if (yLen <= -1) {
+                flag = false;
+                continue;
+            }
+            String result = text.substring(xLen, yLen);
+            strings.add(result);
+        }
+
+        return strings;
     }
 
 }
