@@ -4,21 +4,25 @@ import javax.swing.*;
 
 public class LogUtil {
 
-    private JTextArea logTextArea;
+    private static final String STATUS_INFO = "info";
+    private static final String STATUS_ERROR = "error";
+    private final JTextArea logTextArea;
 
     public LogUtil(JTextArea logTextArea){
         this.logTextArea = logTextArea;
     }
 
-    public void info(String info){
-        String log = logTextArea.getText() + "\n [ info ]  "+ TimeUtil.getDayTime() + info;
-        logTextArea.setText(log);
-        logTextArea.setCaretPosition(logTextArea.getText().length());
+    public void info(String detail){
+        setLogTextArea(STATUS_INFO, detail);
     }
 
-    public void error(String error){
-        String log = logTextArea.getText() + "\n [ error ]  "+ TimeUtil.getDayTime() + error;
-        logTextArea.setText(log);
+    public void error(String detail){
+        setLogTextArea(STATUS_ERROR, detail);
+    }
+
+    private void setLogTextArea(String status, String detail){
+        String log = " [ " + status + " ]  "+ TimeUtil.getDayTime() + detail + "\n";
+        logTextArea.append(log);
         logTextArea.setCaretPosition(logTextArea.getText().length());
     }
 
