@@ -57,7 +57,7 @@ public class ZabbixHostService extends ZabbixService{
         row[1] = dataMap.get("host");
         row[2] = dataMap.get("question");
         row[5] = dataMap.get("time");
-        MainView.myTableModel.list.add(row);
+        MainView.myTableModel.list.add(0, row);
         MainView.alarmTable.updateUI();
     }
 }

@@ -1,8 +1,10 @@
 package com.bcat.dao;
 
+import com.bcat.App;
 import com.bcat.constant.CommonConstant;
 import com.bcat.utils.CommonUtil;
 import com.bcat.utils.MyStringUtil;
+import com.bcat.view.MainView;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.Request;
@@ -38,19 +40,18 @@ public class RmsDao extends Dao{
                 Elements tdElements = trElement.getElementsByTag("td");
                 Map<String, String> dataMap = new HashMap<>();
                 for (int i = 0; i < tdElements.size(); i++) {
-                    if (i == 12) {
+                    if (i == 12)
                         dataMap.put(headTitleArray[12], getAlarmUrlById(isBusiness, tdElements.get(0).text(), cookie));
-                    } else {
+                    else
                         dataMap.put(headTitleArray[i], tdElements.get(i).text());
-                    }
-
-
                 }
                 dataArrays.add(dataMap);
             }
             return dataArrays;
         } catch (Exception e) {
             System.out.println("[error] " + str);
+            MainView.logUtil.error("  Cookie失效 ：" + str);
+            App.onStop();
             e.printStackTrace();
             return null;
         }

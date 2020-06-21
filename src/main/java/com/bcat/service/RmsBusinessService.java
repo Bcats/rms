@@ -34,6 +34,7 @@ public class RmsBusinessService extends RmsService {
                 // 触发告警条件执行操作
                 execute(dataMap);
             }
+
         }
         return sendDataArrays;
     }
@@ -50,7 +51,7 @@ public class RmsBusinessService extends RmsService {
         EmailUtil.sendEmail(mailModel);
         // 更新表格数据
         String[] row = RmsDao.mapToStrings(dataMap);
-        MainView.myTableModel.list.add(row);
+        MainView.myTableModel.list.add(0, row);
         MainView.alarmTable.updateUI();
     }
 

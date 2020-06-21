@@ -21,18 +21,20 @@ public class ZabbixHostTask implements Runnable {
 
     @Override
     public void run() {
-        for (;;){
-            ZabbixHostController zabbixHostController = new ZabbixHostController();
-            List<Map<String, String>> sendAlarmData = zabbixHostController.getAlarmData();
-
-            // 调用状态label更新
-            MainView.statusLabel.setText("状态：第 " + (++runCount) + " 次调用,时间："+ TimeUtil.getDayTime());
-
-            try {
-                Thread.sleep(timeOut);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        while (true){
+            if (MainView.runButton.getText().equals("正在运行")){
+                ZabbixHostController zabbixHostController = new ZabbixHostController();
+                List<Map<String, String>> sendAlarmData = zabbixHostController.getAlarmData();
+                // 调用状态label更新
+                MainView.statusLabel.setText("状态：第 " + (++runCount) + " 次调用,时间：" + TimeUtil.getDayTime());
+                try {
+                    Thread.sleep(timeOut);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+
+
         }
     }
 }

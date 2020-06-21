@@ -44,15 +44,15 @@ public class RmsServerDao extends RmsDao{
             return parseStr(false, responseBody.string(), cookie);
         } catch (Exception e) {
             e.printStackTrace();
-            MainView.logUtil.error("  rms网络异常或Cookie失效");
+            MainView.logUtil.error("  rms网络异常");
             errorCount++;
             if (errorCount >= 10) {
                 EmailUtil.sendEmail(new MailModel(MainView.emailText.getText(),
-                        "rms网络异常或Cookie失效",
-                        "累计十次获取数据失败，请查检网络或更新cookie"));
+                        "rms网络异常",
+                        "累计十次获取数据失败，请查检网络"));
                 errorCount = 0;
             }
-            System.out.println("[error] -> RmsServerDao 已发送 “ 网络错误或cookie失效 ” 邮件");
+            System.out.println("[error] -> RmsServerDao 已发送 “ 网络错误 ” 邮件");
             return null;
         }
     }

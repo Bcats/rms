@@ -17,21 +17,22 @@ public class RmsBusinessTask extends RmsTask implements Runnable {
 
     @Override
     public void run() {
-        for (;;){
-            // 监控时间段报时
-            if (bufferHour != Calendar.getInstance().get(Calendar.HOUR_OF_DAY)){
-                bufferHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-                MainView.logUtil.info("  -------------  "+ bufferHour + "点  -------------");
+        while (true){
+            if (MainView.runButton.getText().equals("正在运行")){// 监控时间段报时
+                if (bufferHour != Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+                    bufferHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+                    MainView.logUtil.info("  -------------  " + bufferHour + "点  -------------");
+                }
+                // 获取数据
+                RmsBusinessController rmsBusinessController = new RmsBusinessController();
+                List<Map<String, String>> sendAlarmData = rmsBusinessController.getAlarmData(cookie);
+                try {
+                    Thread.sleep(timeOut);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            // 获取数据
-            RmsBusinessController rmsBusinessController = new RmsBusinessController();
-            List<Map<String, String>> sendAlarmData = rmsBusinessController.getAlarmData(cookie);
 
-            try {
-                Thread.sleep(timeOut);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
